@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="es">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Business Diagnostic Tool</title>
+  <script src="/_sdk/data_sdk.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #20b2aa 0%, #48d1cc 100%);
+      min-height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: white;
+      border-radius: 20px;
+      padding: 2.5rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .logo {
+      max-width: 180px;
+      height: 180px;
+      margin: 0 auto 1.5rem auto;
+      display: block;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #20b2aa;
+      box-shadow: 0 4px 12px rgba(32, 178, 170, 0.3);
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      color: #1a202c;
+      margin: 0 0 0.5rem 0;
+      font-weight: 700;
+    }
+
+    .header .subtitle {
+      font-size: 1.25rem;
+      color: #20b2aa;
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+    }
+
+    .header p {
+      color: #718096;
+      font-size: 1rem;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    .question-card {
+      background: #f7fafc;
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid #e2e8f0;
+      transition: all 0.3s ease;
+    }
+
+    .question-card:hover {
+      border-color: #20b2aa;
+      box-shadow: 0 4px 12px rgba(32, 178, 170, 0.1);
+    }
+
+    .question-card h3 {
+      font-size: 1.125rem;
+      color: #2d3748;
+      margin: 0 0 1rem 0;
+      font-weight: 600;
+      line-height: 1.5;
+    }
+
+    .question-card small {
+      color: #718096;
+      font-size: 0.9rem;
+    }
+
+    .question-card label {
+      display: block;
+      padding: 0.75rem;
+      margin: 0.5rem 0;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+      font-size: 0.95rem;
+      color: #2d3748;
+    }
+
+    .question-card label:hover {
+      background: #edf2f7;
+      border-color: #cbd5e0;
+    }
+
+    .question-card input[type="radio"]:checked + label,
+    .question-card label:has(input[type="radio"]:checked),
+    .question-card label:has(input[type="checkbox"]:checked) {
+      background: #20b2aa;
+      color: white;
+      border-color: #20b2aa;
+    }
+
+    .question-card input[type="radio"],
+    .question-card input[type="checkbox"] {
+      margin-right: 0.5rem;
+      cursor: pointer;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 1rem 2.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .btn-primary {
+      background: #20b2aa;
+      color: white;
+      box-shadow: 0 4px 14px rgba(32, 178, 170, 0.4);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: #1a9a92;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(32, 178, 170, 0.5);
+    }
+
+    .btn-primary:disabled {
+      background: #cbd5e0;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    .btn-secondary {
+      background: #e2e8f0;
+      color: #2d3748;
+    }
+
+    .btn-secondary:hover {
+      background: #cbd5e0;
+    }
+
+    .results {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      background: linear-gradient(135deg, #20b2aa 0%, #48d1cc 100%);
+      border-radius: 16px;
+      color: white;
+      margin-top: 2rem;
+    }
+
+    .results.show {
+      display: block;
+      animation: slideIn 0.5s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results h2 {
+      font-size: 2rem;
+      margin: 0 0 1rem 0;
+    }
+
+    .results .score {
+      font-size: 4rem;
+      font-weight: 700;
+      margin: 1rem 0;
+    }
+
+    .results .level {
+      font-size: 1.5rem;
+      margin: 1rem 0;
+      font-weight: 600;
+    }
+
+    .results p {
+      font-size: 1.125rem;
+      line-height: 1.6;
+      margin: 1rem 0;
+      opacity: 0.95;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      color: #20b2aa;
+      font-size: 1rem;
+      margin-top: 1rem;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .success-message {
+      display: none;
+      background: #48bb78;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: 600;
+    }
+
+    .success-message.show {
+      display: block;
+      animation: slideIn 0.5s ease;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1.5rem;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .header .subtitle {
+        font-size: 1rem;
+      }
+
+      .button-group {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="https://cdn.tailwindcss.com" type="text/javascript"></script>
+ </head>
+ <body>
+  <div class="container">
+   <div class="header"><img src="https://res.cloudinary.com/dxhef6dju/image/upload/v1755725396/ChatGPT_Image_Apr_16_2025_12_31_00_AM_pbed1s.png" alt="Fit Club Mallorca" class="logo" id="logo">
+    <h1 id="main-title">Diagnóstico Digital Fit Club Mallorca</h1>
+    <div class="subtitle" id="subtitle">
+     Fase 0 - Evaluación Inicial
+    </div>
+    <p id="description">Completa este cuestionario para evaluar el nivel actual de digitalización y automatización de Fit Club Mallorca.</p>
+   </div>
+   <form id="business-test"><!-- Question 1 -->
+    <div class="question-card">
+     <h3>1. ¿Cómo llegan actualmente los nuevos clientes a Fit Club?</h3><label><input type="checkbox" name="q1" value="web"> Web o formulario online</label> <label><input type="checkbox" name="q1" value="whatsapp"> WhatsApp o teléfono</label> <label><input type="checkbox" name="q1" value="social"> Redes sociales (Instagram/Facebook)</label> <label><input type="checkbox" name="q1" value="referral"> Recomendaciones presenciales</label>
+    </div><!-- Question 2 -->
+    <div class="question-card">
+     <h3>2. ¿Cómo gestionan hoy las consultas y mensajes de clientes?</h3><label><input type="radio" name="q2" value="manual"> Manualmente por cada canal</label> <label><input type="radio" name="q2" value="templates"> Con mensajes predefinidos o plantillas</label> <label><input type="radio" name="q2" value="automated"> Con sistema automatizado o chatbot</label>
+    </div><!-- Question 3 -->
+    <div class="question-card">
+     <h3>3. ¿Tienen un lugar centralizado donde se guardan los datos de leads o clientes?</h3><label><input type="radio" name="q3" value="yes"> Sí, CRM o base digital organizada</label> <label><input type="radio" name="q3" value="no"> No, usamos hojas o conversaciones sueltas</label>
+    </div><!-- Question 4 -->
+    <div class="question-card">
+     <h3>4. ¿Qué canal usan más para comunicarse con clientes?</h3><label><input type="radio" name="q4" value="whatsapp"> WhatsApp</label> <label><input type="radio" name="q4" value="email"> Email</label> <label><input type="radio" name="q4" value="social"> Instagram/Facebook</label> <label><input type="radio" name="q4" value="calls"> Llamadas</label>
+    </div><!-- Question 5 -->
+    <div class="question-card">
+     <h3>5. ¿Cuánto tiempo suelen tardar en responder una consulta digital?</h3><label><input type="radio" name="q5" value="fast"> Menos de 1 hora</label> <label><input type="radio" name="q5" value="medium"> Entre 1 y 6 horas</label> <label><input type="radio" name="q5" value="slow"> Más de 6 horas o al día siguiente</label>
+    </div><!-- Question 6 -->
+    <div class="question-card">
+     <h3>6. ¿Cómo se coordinan las reservas de entrenamientos personales o fisioterapia?</h3><label><input type="radio" name="q6" value="app"> App o calendario compartido</label> <label><input type="radio" name="q6" value="whatsapp"> WhatsApp directo con cada entrenador</label> <label><input type="radio" name="q6" value="manual"> Llamadas o presencial</label>
+    </div><!-- Question 7 -->
+    <div class="question-card">
+     <h3>7. ¿Hacen seguimiento a las personas que piden información o prueban un pase gratuito?</h3><label><input type="radio" name="q7" value="yes"> Sí, con mensajes o recordatorios</label> <label><input type="radio" name="q7" value="sometimes"> A veces, manualmente</label> <label><input type="radio" name="q7" value="no"> No se realiza seguimiento</label>
+    </div><!-- Question 8 -->
+    <div class="question-card">
+     <h3>8. ¿En qué idiomas atienden habitualmente a los clientes?</h3><label><input type="radio" name="q8" value="es_en"> Español e inglés</label> <label><input type="radio" name="q8" value="es_en_de"> Español, inglés y alemán</label> <label><input type="radio" name="q8" value="es"> Solo español</label>
+    </div><!-- Question 9 -->
+    <div class="question-card">
+     <h3>9. ¿Qué grado de automatización consideran tener actualmente?</h3><label><input type="radio" name="q9" value="high"> Alto – varios procesos conectados</label> <label><input type="radio" name="q9" value="medium"> Medio – algunas partes automatizadas</label> <label><input type="radio" name="q9" value="low"> Bajo – todo manual</label>
+    </div><!-- Question 10 -->
+    <div class="question-card">
+     <h3>10. ¿Qué mejora sería más prioritaria para ustedes?</h3><label><input type="radio" name="q10" value="leads"> Responder más rápido y captar leads</label> <label><input type="radio" name="q10" value="bookings"> Coordinar reservas y agenda del equipo</label> <label><input type="radio" name="q10" value="conversion"> Aumentar conversión de interesados a socios</label> <label><input type="radio" name="q10" value="time"> Liberar tiempo operativo del dueño</label>
+    </div>
+    <div class="button-group"><button type="submit" class="btn btn-primary" id="submit-btn"> <span id="submit-button-text">Ver Resultados</span> </button> <button type="button" class="btn btn-secondary" id="reset-btn"> <span id="reset-button-text">Reiniciar</span> </button>
+    </div>
+    <div class="loading" id="loading">
+     Guardando resultados...
+    </div>
+    <div class="success-message" id="success-message">
+     ✓ Resultados enviados a +34 631 690 524
+    </div>
+   </form>
+   <div class="results" id="results">
+    <h2>Resultado del Diagnóstico</h2>
+    <div class="score" id="score-display">
+     0
+    </div>
+    <div class="level" id="level-display"></div>
+    <p id="recommendation"></p>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      main_title: "Diagnóstico Digital Fit Club Mallorca",
+      subtitle: "Fase 0 - Evaluación Inicial",
+      description: "Completa este cuestionario para evaluar el nivel actual de digitalización y automatización de Fit Club Mallorca.",
+      submit_button: "Enviar Resultados",
+      reset_button: "Reiniciar",
+      background_color: "#20b2aa",
+      surface_color: "#f7fafc",
+      text_color: "#2d3748",
+      primary_action_color: "#20b2aa",
+      secondary_action_color: "#e2e8f0"
+    };
+
+    const dataHandler = {
+      onDataChanged(data) {
+        // No need to display previous submissions
+      }
+    };
+
+    async function initializeApp() {
+      if (window.dataSdk) {
+        const initResult = await window.dataSdk.init(dataHandler);
+        if (!initResult.isOk) {
+          console.error("Failed to initialize data SDK");
+        }
+      }
+
+      if (window.elementSdk) {
+        await window.elementSdk.init({
+          defaultConfig,
+          onConfigChange: async (config) => {
+            document.getElementById('main-title').textContent = config.main_title || defaultConfig.main_title;
+            document.getElementById('subtitle').textContent = config.subtitle || defaultConfig.subtitle;
+            document.getElementById('description').textContent = config.description || defaultConfig.description;
+            document.getElementById('submit-button-text').textContent = config.submit_button || defaultConfig.submit_button;
+            document.getElementById('reset-button-text').textContent = config.reset_button || defaultConfig.reset_button;
+
+            const bgColor = config.background_color || defaultConfig.background_color;
+            const surfaceColor = config.surface_color || defaultConfig.surface_color;
+            const textColor = config.text_color || defaultConfig.text_color;
+            const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+            const secondaryColor = config.secondary_action_color || defaultConfig.secondary_action_color;
+
+            document.body.style.background = `linear-gradient(135deg, ${bgColor} 0%, ${adjustColor(bgColor, -20)} 100%)`;
+            
+            document.querySelectorAll('.question-card').forEach(card => {
+              card.style.background = surfaceColor;
+              card.style.borderColor = adjustColor(surfaceColor, -10);
+            });
+
+            document.querySelectorAll('.question-card h3').forEach(h3 => {
+              h3.style.color = textColor;
+            });
+
+            document.querySelectorAll('.question-card label').forEach(label => {
+              label.style.color = textColor;
+            });
+
+            const primaryBtn = document.querySelector('.btn-primary');
+            primaryBtn.style.background = primaryColor;
+            primaryBtn.style.boxShadow = `0 4px 14px ${primaryColor}66`;
+
+            const secondaryBtn = document.querySelector('.btn-secondary');
+            secondaryBtn.style.background = secondaryColor;
+            secondaryBtn.style.color = textColor;
+
+            document.querySelector('.results').style.background = `linear-gradient(135deg, ${primaryColor} 0%, ${adjustColor(primaryColor, -20)} 100%)`;
+          },
+          mapToCapabilities: (config) => ({
+            recolorables: [
+              {
+                get: () => config.background_color || defaultConfig.background_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ background_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.surface_color || defaultConfig.surface_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ surface_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.text_color || defaultConfig.text_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ text_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.primary_action_color || defaultConfig.primary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ primary_action_color: value });
+                  }
+                }
+              },
+              {
+                get: () => config.secondary_action_color || defaultConfig.secondary_action_color,
+                set: (value) => {
+                  if (window.elementSdk) {
+                    window.elementSdk.setConfig({ secondary_action_color: value });
+                  }
+                }
+              }
+            ],
+            borderables: [],
+            fontEditable: undefined,
+            fontSizeable: undefined
+          }),
+          mapToEditPanelValues: (config) => new Map([
+            ["main_title", config.main_title || defaultConfig.main_title],
+            ["subtitle", config.subtitle || defaultConfig.subtitle],
+            ["description", config.description || defaultConfig.description],
+            ["submit_button", config.submit_button || defaultConfig.submit_button],
+            ["reset_button", config.reset_button || defaultConfig.reset_button]
+          ])
+        });
+      }
+    }
+
+    function adjustColor(color, percent) {
+      const num = parseInt(color.replace("#", ""), 16);
+      const amt = Math.round(2.55 * percent);
+      const R = (num >> 16) + amt;
+      const G = (num >> 8 & 0x00FF) + amt;
+      const B = (num & 0x0000FF) + amt;
+      return "#" + (0x1000000 + (R < 255 ? R < 1 ? 0 : R : 255) * 0x10000 +
+        (G < 255 ? G < 1 ? 0 : G : 255) * 0x100 +
+        (B < 255 ? B < 1 ? 0 : B : 255))
+        .toString(16).slice(1);
+    }
+
+    function calculateScore(formData) {
+      let score = 0;
+      
+      // Q1 scoring - acquisition channels (more channels = better)
+      const channels = formData.q1.split(',').filter(c => c);
+      score += Math.min(channels.length * 5, 15);
+      
+      // Q2 scoring - query management
+      if (formData.q2 === 'manual') score += 0;
+      else if (formData.q2 === 'templates') score += 8;
+      else if (formData.q2 === 'automated') score += 15;
+      
+      // Q3 scoring - centralized data
+      if (formData.q3 === 'yes') score += 15;
+      else score += 0;
+      
+      // Q4 scoring - main communication channel
+      score += 5;
+      
+      // Q5 scoring - response time
+      if (formData.q5 === 'fast') score += 15;
+      else if (formData.q5 === 'medium') score += 10;
+      else score += 0;
+      
+      // Q6 scoring - booking coordination
+      if (formData.q6 === 'app') score += 15;
+      else if (formData.q6 === 'whatsapp') score += 8;
+      else score += 0;
+      
+      // Q7 scoring - follow-up
+      if (formData.q7 === 'yes') score += 10;
+      else if (formData.q7 === 'sometimes') score += 5;
+      else score += 0;
+      
+      // Q8 scoring - languages
+      if (formData.q8 === 'es_en_de') score += 10;
+      else if (formData.q8 === 'es_en') score += 7;
+      else score += 3;
+      
+      // Q9 scoring - automation level
+      if (formData.q9 === 'high') score += 15;
+      else if (formData.q9 === 'medium') score += 8;
+      else score += 0;
+      
+      // Q10 scoring - priority
+      score += 2;
+      
+      return Math.min(score, 100);
+    }
+
+    function getLevel(score) {
+      if (score < 35) return {
+        level: "🌱 Nivel Inicial",
+        recommendation: "Fit Club tiene una base sólida pero gran potencial de automatización. Prioridades: implementar chatbot multiidioma para WhatsApp/Instagram, centralizar leads en CRM, y automatizar respuestas iniciales para reducir tiempo de respuesta."
+      };
+      else if (score < 65) return {
+        level: "🚀 En Desarrollo",
+        recommendation: "Fit Club está en buen camino digital. Siguiente fase: integrar sistema de reservas automático con calendario del equipo, implementar seguimiento automatizado de leads, y conectar todos los canales de comunicación en una plataforma unificada."
+      };
+      else return {
+        level: "⭐ Nivel Avanzado",
+        recommendation: "¡Excelente trabajo! Fit Club tiene un nivel de digitalización sólido. Enfoque en optimización: análisis de conversión por canal, automatización de recordatorios y seguimientos, y dashboard de métricas en tiempo real para decisiones basadas en datos."
+      };
+    }
+
+    document.getElementById('business-test').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      const data = {
+        timestamp: new Date().toISOString(),
+        q1: formData.getAll('q1').join(','),
+        q2: formData.get('q2') || '',
+        q3: formData.get('q3') || '',
+        q4: formData.get('q4') || '',
+        q5: formData.get('q5') || '',
+        q6: formData.get('q6') || '',
+        q7: formData.get('q7') || '',
+        q8: formData.get('q8') || '',
+        q9: formData.get('q9') || '',
+        q10: formData.get('q10') || ''
+      };
+      
+      const score = calculateScore(data);
+      const levelInfo = getLevel(score);
+      
+      data.score = score;
+      data.level = levelInfo.level;
+      
+      // Show loading
+      document.getElementById('loading').classList.add('show');
+      document.getElementById('submit-btn').disabled = true;
+      
+      // Save to Data SDK
+      if (window.dataSdk) {
+        const result = await window.dataSdk.create(data);
+        
+        document.getElementById('loading').classList.remove('show');
+        document.getElementById('submit-btn').disabled = false;
+        
+        if (result.isOk) {
+          document.getElementById('success-message').classList.add('show');
+          setTimeout(() => {
+            document.getElementById('success-message').classList.remove('show');
+          }, 3000);
+        }
+      }
+      
+      // Show results
+      document.getElementById('score-display').textContent = score;
+      document.getElementById('level-display').textContent = levelInfo.level;
+      document.getElementById('recommendation').textContent = levelInfo.recommendation;
+      document.getElementById('results').classList.add('show');
+      
+      // Scroll to results
+      document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', function() {
+      document.getElementById('business-test').reset();
+      document.getElementById('results').classList.remove('show');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+
+    initializeApp();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'99d5322dc260cf99',t:'MTc2Mjk0MTc3MC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
